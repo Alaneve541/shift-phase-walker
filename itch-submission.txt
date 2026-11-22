@@ -1,0 +1,106 @@
+SHIFT · 双界行者 / Phase Walker — Game Off 2026
+
+发布状态
+这是待上传的本地提交材料，不代表已经在 GitHub 或 itch.io 发布，也不代表已提交 Game Off。
+你提供的截止时间：2026-12-01 13:37 PST（UTC-8）。
+对应北京时间：2026-12-02 05:37（UTC+8）。请以比赛页面实际截止时间为准，尽量提前提交。
+
+作品标题
+SHIFT · Phase Walker / 双界行者
+
+Short description
+Two worlds. One SHIFT key. Leave your past self behind to unlock the way forward.
+
+Description（可直接粘贴）
+Two worlds cannot coexist. Your past self can.
+
+SHIFT is a browser platformer about two overlapping realities: amber SOL and moonlit LUN.
+A bridge in one world is a ghost in the other. A harmless outline can become a deadly spike.
+Read both layers, jump, then SHIFT at just the right moment.
+
+Across nine handcrafted levels, collect phase shards, dodge world-bound patrols, and aim for
+three stars: finish, collect every shard, and survive without a death.
+
+Level 5, ONE MORE JUMP, unlocks double-jumping: release and press jump again in the air.
+You get one extra boost until landing; switching worlds does not recharge it.
+
+The finale, HOLD THIS FOR ME, changes the rules. SHIFT leaves a three-second double of your old self.
+Leave it holding a pressure plate in SOL, race to its partner in LUN, and unlock a resonance gate
+together. There can only be one echo: each new shift replaces the last. Pause freezes its timer.
+
+Features:
+- Nine levels, checkpoints, local progress and best times.
+- Radial world transitions, a trailing scarf, embers, spores and moonlit meteors.
+- Procedural WebAudio music that changes with the world; no downloaded audio assets.
+- Optional Assist mode: slower patrols and more forgiving spike collisions.
+- Keyboard controls and touch buttons. Desktop keyboard / mobile landscape recommended.
+- No install, no account required to play, and no external runtime dependencies.
+
+Browser interface and tutorials: Simplified Chinese.
+The optional native Windows edition has Chinese/English menus and tutorials, plus gamepad controls.
+It also includes WAIT FOR ME, a separate ten-chapter station journey with its own two-page map and progress.
+Instead of standing still, your double replays your last three seconds of movement in the old world.
+Record plates in order, leave your past self upstairs, take a right-to-left route, and catch the last train.
+Later stops replay jumps, send you back for your partner, link three doors to one recording, and ask you
+to SHIFT between stepping stones in midair before arriving home at sunrise. Every chapter has three
+shards, checkpoints and a single jump. All six earlier stops and their saved records are retained.
+This journey is exclusive to the native Windows edition, not the HTML build.
+
+Controls:
+Arrow keys / A D — move
+Space / W / Up — jump; release early for a shorter jump
+From level 5: release and press again in midair to double-jump (touch: release and tap ▲ again)
+Shift — switch worlds (and leave an echo in the finale)
+R — restart level
+Esc — pause; Assist mode is in this menu
+M — mute
+
+Made for Game Off 2026's SHIFT theme.
+Created by Alaneve541 with Qoder AI assistance in programming, level iteration and testing.
+Browser graphics use procedural Canvas drawings; browser music/SFX use WebAudio.
+The native Windows edition uses procedural Godot gameplay graphics and original synthesized PCM audio.
+Its day/night station menu illustration is AI-generated with Meowa; buttons and bilingual text remain native Godot controls.
+Source license: MIT. Add the actual public GitHub repository link after publishing it.
+
+中文简介
+此界的断桥，是彼界的通途。
+按 SHIFT 切换阳界与阴界，穿过九个关卡，收集相位碎片。
+第五关“再跳一下”解锁二段跳：空中松开跳跃键再按一次，落地恢复。
+之后要把二段跳和切换世界配合起来，够到高台、跨过断桥。
+最终关“帮我踩一下”中，切换会在原来的世界留下三秒分身；让分身守住一块踏板，
+再跑向另一个世界的踏板，共同开门。两个世界不能同在，但过去的你可以。
+原生 Windows 版另附“等我一下”十站旅程：分身会重走刚才三秒，而不是原地站着。
+保留原来的六站，继续新增“跳过去等我”“回来接一下我”“一口气过三门”“天亮就到家”。
+从连续开门、上下层配合、反向走位，到跳跃回放、折返接应、三门联动和空中换边。
+独立两页选关地图、逐关解锁与最佳成绩；每关三个碎片，只用单次跳跃，R 从最近检查点重试。
+旧六站成绩保留，第六站通关存档会自动解锁第七站。标题页主按钮继续十站旅程。
+原版九关仍保留独立入口；网页版不含十站旅程。
+
+建议元数据
+Kind of project: HTML
+Genre: Platformer
+Tags（按 itch.io 实际可选项）：puzzle-platformer, 2d, singleplayer, atmospheric, short
+Pricing: free
+Language: Chinese (Simplified)
+AI assistance: 如页面或比赛要求披露，按上文如实填写，提交前检查当届规则。
+
+上传与提交步骤
+1. 用 package.ps1 生成 HTML5 ZIP。选择文件名以 SHIFT-Phase-Walker-HTML5 开头的最新 ZIP。
+2. 在自己的 itch.io 账号中新建项目，项目类型选 HTML。
+3. 上传 ZIP，勾选类似“This file will be played in the browser”的浏览器游玩选项。
+4. 嵌入区域建议 960 × 640；启用全屏选项。点击游戏区域后键盘输入才会聚焦。
+5. 用 cover.png 作封面、echo.png 作截图，粘贴简介与操作说明，价格设为免费。
+6. 在实际 itch.io 嵌入页试玩：开始、跳跃、切换、暂停、静音、重开与存档。
+   存档保存在当前浏览器/站点，file://、本地预览与 itch.io 的存档互不共享。
+7. 补上实际 GitHub 公共仓库地址，确认页面可公开访问，再发布作品页面。
+8. 进入 Game Off 2026 比赛页面，选择提交作品，选中刚发布的游戏并填写表单。
+9. 检查作品确实出现在比赛提交列表中，保存确认信息。发布作品不等于提交比赛。
+10. 若之后更新 ZIP，重新验证线上试玩；不要只更新本地文件。
+
+GitHub 发布
+需要安装官方 GitHub CLI 并登录：gh auth login
+随后在项目目录执行：.\publish-github.ps1
+默认创建当前已登录账号下名为 shift-phase-walker 的公共仓库并推送现有提交。
+若失败，先检查远端状态，不要强制推送或反复创建。
+
+当前材料不会自动登录账号、公开发布、提交比赛或在截止时间自动执行任务。

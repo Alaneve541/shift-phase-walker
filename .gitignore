@@ -1,0 +1,17 @@
+# scratch / test artifacts
+_*.png
+_*.txt
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# local-only build output (keep the itch zip out of git)
+*.zip
+
+# Godot imported cache and local exports
+godot/.godot/
+godot/build/
