@@ -18,7 +18,7 @@ SHIFT is a browser platformer about two overlapping realities: amber SOL and moo
 A bridge in one world is a ghost in the other. A harmless outline can become a deadly spike.
 Read both layers, jump, then SHIFT at just the right moment.
 
-Across nine handcrafted levels, collect phase shards, dodge world-bound patrols, and aim for
+Across nine handcrafted campaign levels, collect phase shards, dodge world-bound patrols, and aim for
 three stars: finish, collect every shard, and survive without a death.
 
 Level 5, ONE MORE JUMP, unlocks double-jumping: release and press jump again in the air.
@@ -37,14 +37,14 @@ Features:
 - No install, no account required to play, and no external runtime dependencies.
 
 Browser interface and tutorials: Simplified Chinese.
-The optional native Windows edition has Chinese/English menus and tutorials, plus gamepad controls.
-It also includes WAIT FOR ME, a separate ten-chapter station journey with its own two-page map and progress.
-Instead of standing still, your double replays your last three seconds of movement in the old world.
-Record plates in order, leave your past self upstairs, take a right-to-left route, and catch the last train.
-Later stops replay jumps, send you back for your partner, link three doors to one recording, and ask you
-to SHIFT between stepping stones in midair before arriving home at sunrise. Every chapter has three
-shards, checkpoints and a single jump. All six earlier stops and their saved records are retained.
-This journey is exclusive to the native Windows edition, not the HTML build.
+Both the browser build and the native Windows edition include WAIT FOR ME, a separate ten-chapter
+station journey with its own map and progress. Instead of standing still, your double replays your
+last three seconds of movement in the old world. Record plates in order, leave your past self upstairs,
+take a right-to-left route, and catch the last train. Later stops replay jumps, send you back for your
+partner, link three doors to one recording, and ask you to SHIFT between stepping stones in midair
+before arriving home at sunrise. Every chapter has three shards, checkpoints and a single jump.
+All six earlier stops and their saved records are retained.
+The native Windows edition adds Chinese/English menus, gamepad controls and native Godot rendering.
 
 Controls:
 Arrow keys / A D — move
@@ -64,17 +64,17 @@ Source license: MIT. Source: https://github.com/Alaneve541/shift-phase-walker
 
 中文简介
 此界的断桥，是彼界的通途。
-按 SHIFT 切换阳界与阴界，穿过九个关卡，收集相位碎片。
+按 SHIFT 切换阳界与阴界，穿过九个原版关卡；网页版和 Windows 版还包含“等我一下”十站旅程。
 第五关“再跳一下”解锁二段跳：空中松开跳跃键再按一次，落地恢复。
 之后要把二段跳和切换世界配合起来，够到高台、跨过断桥。
 最终关“帮我踩一下”中，切换会在原来的世界留下三秒分身；让分身守住一块踏板，
 再跑向另一个世界的踏板，共同开门。两个世界不能同在，但过去的你可以。
-原生 Windows 版另附“等我一下”十站旅程：分身会重走刚才三秒，而不是原地站着。
+网页版和原生 Windows 版都包含“等我一下”十站旅程：分身会重走刚才三秒，而不是原地站着。
 保留原来的六站，继续新增“跳过去等我”“回来接一下我”“一口气过三门”“天亮就到家”。
 从连续开门、上下层配合、反向走位，到跳跃回放、折返接应、三门联动和空中换边。
-独立两页选关地图、逐关解锁与最佳成绩；每关三个碎片，只用单次跳跃，R 从最近检查点重试。
+网页版为十站选关地图，原生版为两页选关地图；逐关解锁与最佳成绩；每关三个碎片，只用单次跳跃，R 从最近检查点重试。
 旧六站成绩保留，第六站通关存档会自动解锁第七站。标题页主按钮继续十站旅程。
-原版九关仍保留独立入口；网页版不含十站旅程。
+原版九关仍保留独立入口；网页版和 Windows 版都包含十站旅程。
 
 建议元数据
 Kind of project: HTML

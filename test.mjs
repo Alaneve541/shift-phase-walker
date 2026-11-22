@@ -57,6 +57,94 @@ function leaveEcho(S) {
   S.start(8); S.step(3); runTo(S, 211); S.shift(); S.step(4);
 }
 
+function moveTo(S, x) {
+  for (let i = 0; i < 360; i++) {
+    const speed = clamp((x - S.P.x) * 6, -265, 265);
+    S.key('ArrowRight', speed > S.P.vx + 15);
+    S.key('ArrowLeft', speed < S.P.vx - 15);
+    S.step();
+    if ((Math.abs(S.P.x - x) < 3 && Math.abs(S.P.vx) < 20) || S.G.won) break;
+  }
+  S.key('ArrowRight', false); S.key('ArrowLeft', false); S.step(8);
+}
+
+function hopTo(S, x) {
+  S.key('Space', true);
+  for (let frame = 0; frame < 160; frame++) {
+    if (frame === 20) S.key('Space', false);
+    const speed = clamp((x - S.P.x) * 6, -265, 265);
+    S.key('ArrowRight', speed > S.P.vx + 15);
+    S.key('ArrowLeft', speed < S.P.vx - 15);
+    S.step();
+    if (frame > 23 && S.P.grounded && Math.abs(S.P.x - x) < 4 && Math.abs(S.P.vx) < 20) break;
+  }
+  S.key('Space', false); S.key('ArrowRight', false); S.key('ArrowLeft', false); S.step(8);
+}
+
+function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+
+function shiftTo(S, target) {
+  if (S.world !== target) { S.shift(); S.step(4); }
+  assert.equal(S.world, target);
+}
+function twoDoors(S, pauseFrames = 45) {
+  moveTo(S, 295); S.step(pauseFrames);
+  moveTo(S, 475); S.step(pauseFrames);
+  moveTo(S, 550); shiftTo(S, 1);
+  moveTo(S, 1005);
+  assert.ok(S.P.x > 936 && S.G.shifts === 1, 'one replay opens two timed doors');
+}
+function upstairsPair(S, upper, lower, echoWorld, gateIndex) {
+  shiftTo(S, echoWorld);
+  moveTo(S, upper - 108);
+  hopTo(S, upper);
+  assert.ok(S.P.grounded && Math.abs(S.P.y + S.P.h - 396) < 0.1, 'reach the raised recording plate');
+  S.step(135);
+  shiftTo(S, 1 - echoWorld);
+  moveTo(S, lower);
+  assert.ok(S.info().relays[gateIndex].plates.every(p => p.active), 'both raised and floor plates light together');
+  assert.equal(S.info().relays[gateIndex].open, true, 'height-separated pair opens its gate');
+}
+function jumpBackPair(S, upper, lower, echoWorld, gateIndex) {
+  shiftTo(S, echoWorld);
+  moveTo(S, upper - 108);
+  hopTo(S, upper);
+  assert.ok(S.P.grounded && Math.abs(S.P.y + S.P.h - 396) < 0.1, 'record a landing on the raised plate');
+  S.step(60);
+  shiftTo(S, 1 - echoWorld);
+  assert.ok(S.info().echoes[0] && S.info().echoes[0].track.some(p => !p.grounded), 'replay keeps the airborne jump');
+  moveTo(S, lower);
+  S.step(75);
+  assert.equal(S.info().relays[gateIndex].open, true, 'returning left lets the recorded landing open the door');
+}
+function threeDoors(S, pauseFrames = 20) {
+  for (const x of [259, 295, 367]) { moveTo(S, x); S.step(pauseFrames); }
+  moveTo(S, 415); shiftTo(S, 1);
+  moveTo(S, 1015);
+  assert.ok(S.P.x > 900 && S.G.shifts === 1, 'one replay opens three consecutive doors');
+}
+function hopShiftTo(S, x) {
+  S.key('Space', true);
+  for (let frame = 0; frame < 160; frame++) {
+    if (frame === 8) { assert.equal(S.P.grounded, false); shiftTo(S, 1); }
+    if (frame === 20) S.key('Space', false);
+    const speed = clamp((x - S.P.x) * 6, -265, 265);
+    S.key('ArrowRight', speed > S.P.vx + 15);
+    S.key('ArrowLeft', speed < S.P.vx - 15);
+    S.step();
+    if (frame > 23 && S.P.grounded && Math.abs(S.P.x - x) < 4 && Math.abs(S.P.vx) < 20) break;
+  }
+  S.key('Space', false); S.key('ArrowRight', false); S.key('ArrowLeft', false); S.step(8);
+  assert.ok(S.world === 1 && S.P.grounded && Math.abs(S.P.y + S.P.h - 324) < 0.1, 'air SHIFT lands on the blue stepping stone');
+}
+function finishJourney(S) {
+  moveTo(S, S.info().portal.x - 11);
+  S.step(80);
+  assert.equal(S.state, 'win');
+  assert.equal(S.G.deaths, 0);
+  assert.equal(S.G.shards, S.G.shardTotal);
+}
+
 test('nine rectangular maps, one spawn and one exit each', () => {
   const { S } = boot();
   assert.equal(S.LEVELS.length, 9);
@@ -334,4 +422,204 @@ test('double jump cannot bypass the final level pressure-plate gates', () => {
     assert.equal(S.info().relays[0].open, false);
     assert.ok(S.P.x + S.P.w <= 16 * 36);
   }
+});
+
+test('ten journey chapters have rectangular maps, spawn, exit, three shards and replay rules', () => {
+  const { S } = boot();
+  assert.equal(S.JOURNEY.length, 10);
+  for (const l of S.JOURNEY) {
+    assert.equal(l.echo_mode, 'replay', l.name);
+    assert.equal(l.double_jump, false, l.name);
+    assert.equal(l.map.length, 15, l.name);
+    assert.equal(new Set(l.map.map(r => r.length)).size, 1, l.name);
+    assert.equal((l.map.join('').match(/S/g) || []).length, 1, l.name);
+    assert.equal((l.map.join('').match(/[EPQ]/g) || []).length, 1, l.name);
+    assert.equal((l.map.join('').match(/\*/g) || []).length, 3, l.name);
+    assert.ok(l.stages.length >= 1, l.name);
+    assert.ok(l.relays.length >= 1, l.name);
+  }
+});
+
+test('all ten journey spawn points are safe and keep single jump', () => {
+  const { S } = boot();
+  for (let i = 0; i < S.JOURNEY.length; i++) {
+    S.startJourney(i); S.step(120);
+    assert.equal(S.G.deaths, 0, S.JOURNEY[i].name);
+    assert.equal(S.info().doubleJump, false, S.JOURNEY[i].name);
+  }
+});
+
+test('journey moving echo replays and opens a timed door', () => {
+  const { S } = boot();
+  S.startJourney(0); S.step(3);
+  moveTo(S, 295);
+  S.step(60);
+  moveTo(S, 440);
+  S.shift(); S.step(4);
+  assert.equal(S.world, 1);
+  const first = S.info().echoes[0];
+  assert.ok(first && first.track && first.track.length > 2, 'echo keeps a recorded track');
+  let moved = false, opened = false;
+  for (let i = 0; i < 190; i++) {
+    S.step();
+    const e = S.info().echoes[0];
+    if (e && Math.abs(e.x - first.x) > 5) moved = true;
+    if (S.info().relays[0].open) opened = true;
+  }
+  assert.equal(moved, true, 'recorded double moves');
+  assert.equal(opened, true, 'recorded double presses the door plate');
+});
+
+test('journey records airborne poses for a jump replay', () => {
+  const { S } = boot();
+  S.startJourney(6); S.step(3);
+  moveTo(S, 403);
+  hopTo(S, 511);
+  assert.ok(Math.abs(S.P.y + S.P.h - 396) < 0.1, 'landed on the raised plate');
+  S.step(60);
+  S.shift(); S.step(4);
+  const e = S.info().echoes[0];
+  assert.ok(e && e.track.some(p => !p.grounded), 'echo track contains the jump');
+});
+
+test('journey supports multiple checkpoints and respawn', () => {
+  const { S } = boot();
+  S.startJourney(5); S.step(3);
+  const cps = S.info().checkpoints;
+  assert.equal(cps.length, 4);
+  const cp = cps[0];
+  S.P.x = cp.x - S.P.w / 2; S.P.y = cp.y - S.P.h; S.step();
+  assert.equal(S.info().checkpoints[0].active, true);
+  const spawn = S.info().respawn;
+  S.P.y = 620; S.step(); S.step(65);
+  assert.equal(S.G.dead, false);
+  assert.ok(Math.abs(S.P.x - (cp.x - S.P.w / 2)) < 1);
+  assert.equal(S.world, spawn.world);
+});
+
+test('journey progress is saved by chapter id and stays separate', () => {
+  const { S, store } = boot();
+  S.startJourney(0); S.step(3);
+  const p = S.info().portal;
+  S.P.x = p.x - 11; S.P.y = p.y - 13; S.step();
+  for (let i = 0; i < 80 && S.state !== 'win'; i++) S.step();
+  assert.equal(S.state, 'win');
+  const data = JSON.parse(store.get('shift_save_v1'));
+  assert.equal(data.journeyUnlocked, 1);
+  assert.ok(data.journeyBest.sample_wait_for_me);
+  assert.equal(data.best[0], undefined);
+});
+
+test('journey map and continue controls start the journey', () => {
+  const { S, doc } = boot();
+  doc.getElementById('journeyMapBtn').click();
+  assert.equal(doc.getElementById('journeyOv').classList.contains('show'), true);
+  doc.getElementById('journeyContinueBtn').click();
+  assert.equal(S.mode, 'journey');
+  assert.equal(S.li, 0);
+});
+
+test('all ten journey chapters can be completed with keyboard input', () => {
+  const { S } = boot();
+
+  S.startJourney(0); S.step(3);
+  moveTo(S, 295); S.step(180);
+  assert.equal(S.info().relays[0].plates[0].active, true);
+  S.shift(); S.step(4);
+  moveTo(S, 394); hopTo(S, 475);
+  moveTo(S, 710); assert.ok(S.P.x > 684);
+  moveTo(S, 940); assert.equal(S.info().checkpoints[0].active, true);
+  if (S.world !== 0) shiftTo(S, 0);
+  moveTo(S, 1267);
+  const shiftsA = S.G.shifts; S.shift(); S.step(4);
+  assert.ok(S.world === 0 && S.G.shifts === shiftsA, 'static shift inside LUN cage is denied');
+  S.step(75); moveTo(S, 1350); shiftTo(S, 1);
+  hopTo(S, 1530); moveTo(S, 1725); assert.ok(S.P.x > 1692);
+  moveTo(S, 1930); assert.equal(S.info().checkpoints[1].active, true);
+  if (S.world !== 0) shiftTo(S, 0);
+  moveTo(S, 2239);
+  const shiftsB = S.G.shifts; S.shift(); S.step(4);
+  assert.ok(S.world === 0 && S.G.shifts === shiftsB, 'last floor plate also forbids a static shift');
+  S.step(90); moveTo(S, 2324); shiftTo(S, 1);
+  hopTo(S, 2455);
+  assert.ok(Math.abs(S.P.y + S.P.h - 396) < 0.1, 'single jump reaches the upper plate');
+  S.step(32); assert.ok(S.info().relays[2].plates.every(p => p.active), 'final pair lights together');
+  S.step(48); assert.equal(S.info().relays[2].open, true);
+  hopTo(S, 2540);
+  finishJourney(S);
+
+  S.startJourney(1); S.step(3);
+  twoDoors(S); finishJourney(S);
+
+  S.startJourney(2); S.step(3);
+  upstairsPair(S, 367, 619, 0, 0);
+  moveTo(S, 970); assert.equal(S.info().checkpoints[0].active, true);
+  upstairsPair(S, 1231, 1447, 1, 1);
+  finishJourney(S);
+
+  S.startJourney(3); S.step(3);
+  moveTo(S, 1879); S.step(135); moveTo(S, 1800); shiftTo(S, 1);
+  moveTo(S, 1380); assert.equal(S.info().checkpoints[1].active, true);
+  moveTo(S, 1231); S.step(135); moveTo(S, 1155); shiftTo(S, 0);
+  moveTo(S, 979); assert.ok(S.info().relays[1].plates.every(p => p.active));
+  moveTo(S, 700); assert.equal(S.info().checkpoints[0].active, true);
+  shiftTo(S, 1); moveTo(S, 295); shiftTo(S, 0);
+  finishJourney(S);
+
+  S.startJourney(4); S.step(3);
+  moveTo(S, 295); S.step(135); moveTo(S, 380); shiftTo(S, 1);
+  moveTo(S, 810); assert.equal(S.info().checkpoints[0].active, true);
+  moveTo(S, 979); S.step(135); moveTo(S, 1080); shiftTo(S, 0);
+  moveTo(S, 1500); assert.equal(S.info().checkpoints[1].active, true);
+  moveTo(S, 1663); S.step(135); moveTo(S, 1738); shiftTo(S, 1);
+  hopTo(S, 1843); S.step(24);
+  assert.ok(S.info().relays[2].plates.every(p => p.active));
+  S.step(24); assert.equal(S.info().relays[2].open, true);
+  finishJourney(S);
+
+  S.startJourney(5); S.step(3);
+  twoDoors(S);
+  moveTo(S, 1100); assert.equal(S.info().checkpoints[1].active, true);
+  upstairsPair(S, 1303, 1519, 0, 2);
+  moveTo(S, 1870); assert.equal(S.info().checkpoints[2].active, true);
+  upstairsPair(S, 2095, 2311, 1, 3);
+  moveTo(S, 2670); assert.equal(S.info().checkpoints[3].active, true);
+  shiftTo(S, 1);
+  finishJourney(S);
+
+  S.startJourney(6); S.step(3);
+  jumpBackPair(S, 511, 331, 0, 0);
+  moveTo(S, 885); assert.equal(S.info().checkpoints[0].active, true);
+  jumpBackPair(S, 1303, 1123, 1, 1);
+  finishJourney(S);
+
+  S.startJourney(7); S.step(3);
+  moveTo(S, 691); S.step(135); moveTo(S, 619); shiftTo(S, 1);
+  moveTo(S, 367); assert.equal(S.info().relays[0].open, true);
+  shiftTo(S, 0); assert.equal(S.info().relays[0].open, true);
+  moveTo(S, 1060); assert.equal(S.info().checkpoints[0].active, true);
+  shiftTo(S, 1); moveTo(S, 1519); S.step(135); moveTo(S, 1447); shiftTo(S, 0);
+  moveTo(S, 1195); assert.equal(S.info().relays[1].open, true);
+  shiftTo(S, 1);
+  finishJourney(S);
+
+  S.startJourney(8); S.step(3);
+  threeDoors(S);
+  moveTo(S, 1100); assert.equal(S.info().checkpoints[1].active, true);
+  shiftTo(S, 0);
+  moveTo(S, 1663); S.step(135); moveTo(S, 1738); shiftTo(S, 1);
+  hopTo(S, 1879); S.step(24);
+  assert.equal(S.info().relays[3].open, true);
+  finishJourney(S);
+
+  S.startJourney(9); S.step(3);
+  moveTo(S, 223); hopTo(S, 331);
+  assert.ok(Math.abs(S.P.y + S.P.h - 396) < 0.1, 'amber stepping stone is reachable');
+  moveTo(S, 367); hopShiftTo(S, 475);
+  moveTo(S, 511); hopTo(S, 655);
+  assert.equal(S.info().checkpoints[0].active, true);
+  moveTo(S, 810); assert.equal(S.info().checkpoints[2].active, true);
+  upstairsPair(S, 1087, 1303, 1, 0);
+  assert.equal(S.world, 0);
+  finishJourney(S);
 });

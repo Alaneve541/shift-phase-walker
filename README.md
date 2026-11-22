@@ -8,14 +8,16 @@ Press `SHIFT` and the world wipes around you: amber daylight (SOL) ↔ cyan moon
 Platforms, spikes and patrol drones exist in only one of the two worlds — the other shows them as
 faint dashed ghosts. Read both layers at once, shift at the right moment, and walk out of the overlap.
 
-![SHIFT · 双界行者 — the radial phase-wipe between SOL and LUN](cover.png)
+![SHIFT · 双界行者 — ten stops between SOL and LUN](cover.png)
 
-The browser edition needs no build step or dependencies: open `index.html` and play.
+The browser edition needs no build step or dependencies: open `index.html` and play. It includes the
+original nine-level campaign and the ten-stop **WAIT FOR ME** replay journey.
 
 A separate **native Godot 4 project** lives in `godot/project.godot`. Import it into Godot 4.7.2 and
 press F6 on `main.tscn` (or F5) to play. This is a GDScript implementation, not an embedded browser.
-It includes the same nine levels, double jump and final pressure-plate puzzle, plus Chinese/English
-menus and tutorials, gamepad input, native procedural graphics/audio, and separate local progress.
+It includes the nine-level campaign, double jump, final pressure-plate puzzle and the same ten-stop
+journey, plus Chinese/English menus and tutorials, gamepad input, native procedural graphics/audio,
+and separate local progress.
 The Windows export preset is included. Godot Web export templates are not installed in the current
 environment; the standalone HTML edition remains available for itch.io browser play.
 
@@ -27,10 +29,10 @@ remain native Godot elements, including bilingual labels and keyboard focus. All
 from the original **STATION MAP**; the ten-stop replay journey has its own title entrance and map.
 Native saves use Godot's `user://progress.json`; they do not share the browser edition's progress.
 
-### 等我一下 / WAIT FOR ME — ten-stop native journey
+### 等我一下 / WAIT FOR ME — ten-stop journey
 
-Choose **WAIT FOR ME · 10 STOPS** on the native title screen to continue this separate journey,
-or use its two-page ten-stop map to replay an unlocked chapter. SHIFT replays your last three seconds of
+Choose **WAIT FOR ME · 10 STOPS** on the title screen (browser or native) to continue this separate
+journey, or use its ten-stop map to replay an unlocked chapter. SHIFT replays your last three seconds of
 movement in the world you leave behind. There is one moving double; another SHIFT replaces it.
 Walk across a plate, leave the space that becomes solid in the other world, then switch:
 your past route can hold the door while you move on.
@@ -49,11 +51,12 @@ your past route can hold the door while you move on.
 Each chapter uses a single jump, three optional shards, checkpoints and its own three-star result.
 Live doors have release grace; paired doors latch permanently. `R` retries the latest checkpoint
 and counts a retry; after finishing, replay starts the current chapter from its beginning.
-Pause freezes recording and playback. The timeline and path preview show what the double will do.
+Pause freezes recording and playback. The native HUD adds a timeline and path preview; the browser draws the recorded path.
 Chapter completion unlocks the next stop, with separate best times and ratings. Existing completion
 of the original sample also unlocks stop two; a saved completion of stop six unlocks stop seven.
-The original six stops retain their IDs and best records. The original nine campaign levels and HTML edition
-retain their existing static-double rules and independent progress.
+The original six stops retain their IDs and best records. The nine campaign levels retain their
+existing static-double rules and independent progress; the ten-stop journey uses moving replay in
+both the browser and native editions.
 
 ---
 
@@ -73,8 +76,8 @@ python -m http.server 8000
 | Input | Action |
 | --- | --- |
 | `← →` / `A D` | Move |
-| `Space` / `W` / `↑` | Jump; from level 5, release and press again in midair to double-jump |
-| `Shift` | Phase-shift between SOL and LUN |
+| `Space` / `W` / `↑` | Jump; from campaign level 5, release and press again in midair to double-jump |
+| `Shift` | Phase-shift between SOL and LUN; in WAIT FOR ME, leave a moving replay double |
 | `R` | Restart level |
 | `Esc` | Pause |
 | `M` | Mute |
@@ -82,8 +85,13 @@ python -m http.server 8000
 
 ## The loop
 
-- **9 hand-built levels** with a rising difficulty curve, checkpoints, collectible phase shards and star ratings
+- **9 hand-built campaign levels** with a rising difficulty curve, checkpoints, collectible phase shards and star ratings
   (clear · all shards · no deaths).
+- **等我一下 (Wait for Me)**: a separate ten-stop replay journey in both the browser and native editions.
+  SHIFT leaves a moving double that replays your last three seconds; one double at a time, and a new
+  SHIFT replaces it. Record ordered plate pauses, return to a partner plate, chain three timed doors,
+  replay a jump, or change stepping stones in midair. Every stop has three shards, checkpoints and its
+  own best time and rating.
 - **Double jump unlocks in level 5, 再跳一下 (One More Jump)**: release and press jump again for one
   extra midair boost. Landing restores it; switching worlds does not. A filled dot beneath the airborne
   player means the boost is ready, and an outline means it is spent. Touch uses the same release-and-tap rule.
@@ -121,7 +129,7 @@ python -m http.server 8000
 
 ## 帮我踩一下 / Hold This for Me
 
-![A SOL echo holds a pressure plate while the player moves through LUN](echo.png)
+![A recorded double replays its route while the present self opens a paired gate](echo.png)
 
 Two worlds cannot coexist. Your past self can.
 
@@ -136,7 +144,8 @@ node --test test.mjs
 The suite checks maps, spawn safety, keyboard-only clears of levels 1 and 5–9 (including all four
 level-5 platforms and all shards/checkpoints in levels 6–8), double-jump unlock/reset/input limits,
 echo expiry and world/ground contact, gate collisions, pause/restart/death, shift denial, assist physics,
-and timing.
+and timing. It also clears all ten WAIT FOR ME chapters with every shard, and checks moving replay,
+raised plates, hold/latch doors, multiple checkpoints and separate journey progress.
 Rendering uses lightweight stubs in these unit tests; browser visual checks are separate.
 
 For the native edition, run the Godot executable with:

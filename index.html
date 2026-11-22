@@ -146,6 +146,23 @@ h1.logo{
 .lvbtn:hover:not(:disabled){border-color:var(--sol); box-shadow:0 0 14px rgba(255,179,71,.25); transform:translateY(-2px)}
 .lvbtn:disabled{opacity:.28; cursor:not-allowed}
 .lvbtn:focus-visible{outline:2px solid var(--lun); outline-offset:2px}
+.journeyGrid{display:grid; grid-template-columns:repeat(5,1fr); gap:7px; margin:14px 0 10px}
+.jvbtn{
+  min-height:64px; border-radius:11px; border:1px solid var(--line); cursor:pointer;
+  background:rgba(255,255,255,.03); color:var(--ink); font-family:inherit; padding:6px 4px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  font-size:11px; font-weight:800; line-height:1.28; transition:all .15s;
+}
+.jvbtn .jnum{font-size:9px; color:var(--mut); letter-spacing:.08em; font-weight:500}
+.jvbtn .jname{font-size:12px; letter-spacing:.02em}
+.jvbtn small{font-size:9px; color:var(--gold); letter-spacing:1px; font-weight:400; min-height:10px}
+.jvbtn:hover:not(:disabled){border-color:var(--lun); box-shadow:0 0 14px rgba(77,216,255,.22); transform:translateY(-2px)}
+.jvbtn:disabled{opacity:.28; cursor:not-allowed}
+.jvbtn:focus-visible{outline:2px solid var(--lun); outline-offset:2px}
+#journeyOv .panel{padding:clamp(14px,2.6vw,24px)}
+#journeyOv .badge{margin-bottom:10px}
+#journeyOv .journeyGrid{margin:10px 0 8px}
+#journeyOv .tagline{line-height:1.55}
 .controls{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:18px; color:var(--mut); font-size:11.5px; letter-spacing:.06em}
 .controls span{display:flex; align-items:center; gap:6px}
 kbd{
@@ -210,6 +227,7 @@ body.touchmode .keyhint{display:none}
   .stage{width:min(100vw - 8px, calc((100dvh - 60px) * 16 / 9))}
   .hud .mid .stat:nth-child(3){display:none}
   .levels{grid-template-columns:repeat(4,1fr)}
+  .journeyGrid{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-height:820px){
   #titleOv h1.logo{font-size:clamp(34px,6vw,56px)}
@@ -271,12 +289,16 @@ body.touchmode .keyhint{display:none}
       <h1 class="logo">SHIFT</h1>
       <div class="subtitle">双 界 行 者</div>
       <div class="tagline">你被困在两个重叠的世界之间。<br>按下 <em>SHIFT</em> 相位切换 —— 此界的断桥，是彼界的通途。<br>但小心：彼界的尖刺与巡逻机，同样真实。</div>
-      <div class="btnrow"><button class="btn" id="startBtn">开始游戏</button></div>
+      <div class="btnrow">
+        <button class="btn" id="journeyBtn">等我一下 · 十站旅程</button>
+        <button class="btn ghost" id="startBtn">原版九关</button>
+        <button class="btn ghost" id="journeyMapBtn" style="padding:10px 14px;font-size:11px">十站地图</button>
+      </div>
       <div class="levels" id="levelGrid"></div>
       <div class="controls">
-        <span><kbd>← →</kbd>/<kbd>A D</kbd> 移动</span>
-        <span><kbd>空格</kbd>/<kbd>W</kbd> 跳跃 · 第5关解锁二段跳</span>
-        <span><kbd>SHIFT</kbd> 切换世界</span>
+        <span><kbd>← →</kbd> 移动</span>
+        <span><kbd>空格</kbd> 跳跃</span>
+        <span><kbd>SHIFT</kbd> 切换</span>
         <span><kbd>ESC</kbd> 暂停</span>
       </div>
       <div class="enterhint">按 ENTER 开始</div>
@@ -291,6 +313,7 @@ body.touchmode .keyhint{display:none}
       <div class="pausebtns">
         <button class="btn" id="resumeBtn">继续</button>
         <button class="btn ghost" id="pauseRestartBtn">重开本关</button>
+        <button class="btn ghost" id="pauseMapBtn" style="display:none">返回旅程地图</button>
         <button class="btn ghost" id="quitBtn">返回标题</button>
       </div>
       <div class="soundrow"><span>声音（音乐 + 音效）</span><button class="btn ghost" id="pauseSoundBtn" style="padding:8px 18px;font-size:12px">开</button></div>
@@ -340,6 +363,21 @@ body.touchmode .keyhint{display:none}
         <button class="btn" id="endAgainBtn">再玩一次</button>
         <button class="btn ghost" id="endTitleBtn">返回标题</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 等我一下 · 十站旅程 -->
+  <div class="overlay" id="journeyOv">
+    <div class="panel">
+      <div class="badge">WAIT FOR ME · 10 STOPS</div>
+      <h2 class="ptitle">等我一下 <span class="accent">十站旅程</span></h2>
+      <div class="psub">按下 SHIFT，让过去三秒的你再走一遍</div>
+      <div class="journeyGrid" id="journeyGrid"></div>
+      <div class="btnrow">
+        <button class="btn" id="journeyContinueBtn">继续旅程</button>
+        <button class="btn ghost" id="journeyBackBtn">返回标题</button>
+      </div>
+      <div class="tagline" style="margin-top:8px;margin-bottom:0;font-size:11px">每站三个碎片 · 单次跳跃 · 检查点重试<br>再次切换会替换分身</div>
     </div>
   </div>
 </div>
@@ -511,11 +549,18 @@ const LEVELS = [
     D(2)+'S'+D(13)+'G'+D(15)+'G'+D(4)+'E'+D(2),
     '#'.repeat(40),'#'.repeat(40)]}
 ];
+const JOURNEY = [{"id":"sample_wait_for_me","name":"等我一下","en":"WAIT FOR ME","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"先替我按着","en":"HOLD THE DOOR","hint":"在黄灯上停一会儿再切换。过去三秒的你，会再走一遍。","hint_en":"Pause on the amber plate, then SHIFT. Your past three seconds will play again."},{"x":936,"name":"不用站在那里","en":"YOU CAN WALK AWAY","hint":"踏板另一侧被墙占着？先在 SOL 走过它，到空处再切换。","hint_en":"The plate overlaps a LUN wall. Walk across it in SOL, then SHIFT in clear space."},{"x":1908,"name":"这次，一起走","en":"THIS TIME, TOGETHER","hint":"让过去的你踩下层黄灯，现在的你去上层蓝灯；两盏灯同时亮就开门。","hint_en":"Past you takes the lower SOL plate. Present you takes the upper LUN plate. Light both together."}],"relays":[{"wall":18,"mode":"hold","release":0.55,"plates":[{"x":8,"w":0}]},{"wall":46,"mode":"hold","release":0.55,"plates":[{"x":35,"w":0}]},{"wall":73,"mode":"latch","plates":[{"x":62,"w":0},{"x":68,"w":1,"y":11}]}],"hints":[{"x":8,"y":8.2,"t":"在黄灯上停一会儿，再按 SHIFT","en":"Wait on amber, then press SHIFT"},{"x":12,"y":9.2,"t":"过去的你会重走刚才三秒","en":"Past you repeats the last three seconds"},{"x":33,"y":7.7,"t":"先在 SOL 走过黄灯，到墙外再切换","en":"Cross amber in SOL. SHIFT beyond the blue wall"},{"x":41,"y":9.2,"t":"等过去的你走上黄灯，再过门","en":"Wait for past you to reach the plate, then go"},{"x":61,"y":7.6,"t":"你去楼上，刚才的你留在楼下","en":"You take upstairs. Past you takes downstairs"},{"x":68,"y":6.5,"t":"两盏灯一起亮，门就不会再关","en":"Both lights together unlock the final door"}],"map":["................................................................................","................................................................................","................................................................................","................................................................................","................................................................................","................................................................................","................................................................................","..................G....................A......G...................A......G......","..................G....................A......G...................A......G......","..................G....................A......G...................A...*..G......","..................G....................A......G...................A......G......",".............*....G...............BBB..A..*...G..............BBB..ABBB...G......","..S...............G......C........BBB..A......G......C.......BBB..A......G...E..","################################################################################","################################################################################"]},{"id":"sample_one_after_another","name":"一个接一个","en":"ONE AFTER ANOTHER","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"先后有顺序","en":"IN THE RIGHT ORDER","hint":"在两块黄灯各停半秒，再到墙外切换。让分身依次开门，不要中途再换。","hint_en":"Pause on each amber plate, then SHIFT beyond both blue blocks. One replay opens both doors in order."}],"relays":[{"wall":20,"mode":"hold","release":0.9,"plates":[{"x":8,"w":0,"y":13}]},{"wall":25,"mode":"hold","release":1.1,"plates":[{"x":13,"w":0,"y":13}]}],"hints":[{"x":8,"y":8.7,"t":"第一盏：停半秒，再走","en":"First plate: pause, then move"},{"x":13,"y":9.8,"t":"第二盏：停半秒，再切换","en":"Second plate: pause, then SHIFT clear"},{"x":23,"y":8.5,"t":"两扇门，交给同一个过去的你","en":"One past route. Two doors."}],"map":["....................................","....................................","....................................","....................................","....................................","....................................","....................................","................A...G....G..........","................A...G....G..........","................A...G....G..........","................A...G....G..........",".......BBB..BBB.A...G....G..........","..S.C*.BBB..BBB.A...G..*.G.....*.E..","####################################","####################################"]},{"id":"sample_upstairs","name":"楼上见","en":"SEE YOU UPSTAIRS","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"楼上的我先别动","en":"HOLD THAT LANDING","hint":"跳上黄台阶，在楼上黄灯等两秒。切换后落到蓝灯上，分身会留在楼上。","hint_en":"Jump onto the amber ledge and wait 2s on its plate. SHIFT, drop down and reach the blue plate together."},{"x":936,"name":"这次换你下楼","en":"TAKE TURNS","hint":"这次在 LUN 的蓝色高台录下等待，再切到 SOL。高处的脚印也能开门。","hint_en":"Now record a wait on the blue ledge in LUN, then SHIFT to the lower SOL plate. Height matters."}],"relays":[{"wall":22,"mode":"latch","release":0.75,"plates":[{"x":10,"w":0,"y":11},{"x":17,"w":1,"y":13}]},{"wall":45,"mode":"latch","release":0.75,"plates":[{"x":34,"w":1,"y":11},{"x":40,"w":0,"y":13}]}],"hints":[{"x":10,"y":8.2,"t":"站稳，等两秒，再切换","en":"Land. Wait two seconds. SHIFT."},{"x":18,"y":9.3,"t":"过去在楼上，现在在楼下","en":"Past upstairs. Present downstairs."},{"x":34,"y":8.2,"t":"蓝灯在楼上，黄灯在楼下","en":"Blue upstairs. Amber downstairs."}],"map":[".....................................................",".....................................................",".....................................................",".....................................................",".....................................................",".....................................................",".....................................................","................A.....G...............B......G.......","................A.....G...............B......G.......","................A.....G...............B......G.......","..........*.....A.....G...........*...B......G.......","........AAAAA...A.....G.........BBBBB.B......G.......","..S.............A.....G...C...........B......G...*E..","#####################################################","#####################################################"]},{"id":"sample_other_way","name":"倒着走试试","en":"TRY THE OTHER WAY","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"换边走小路","number":3,"en":"WATCH YOUR STEP","hint":"出口在左边。黄刺走 LUN，蓝刺走 SOL；先到两段尖刺之间的空地再切换。","hint_en":"Exit left. Cross amber spikes in LUN and blue spikes in SOL. SHIFT only in the clear gap between them."},{"x":864,"name":"把蓝灯交给我","number":2,"en":"LEAVE BLUE TO ME","hint":"在右侧蓝灯停两秒，再往左走出黄墙。切到 SOL 后去踩左侧黄灯。","hint_en":"Wait 2s on the right blue plate. Walk LEFT out of the amber block, SHIFT to SOL and reach the left amber plate."},{"x":1512,"name":"往左才是出口","number":1,"en":"THE EXIT IS LEFT","hint":"这次往左走：黄灯上等两秒，走出左侧蓝墙，再切换。分身照样能替你开门。","hint_en":"Go LEFT: wait 2s on amber, leave the blue block to the left, then SHIFT. Your past self still holds the door."}],"relays":[{"wall":45,"mode":"hold","release":0.8,"plates":[{"x":52,"w":0,"y":13}]},{"wall":23,"mode":"latch","release":0.75,"plates":[{"x":34,"w":1,"y":13},{"x":27,"w":0,"y":13}]}],"hints":[{"x":52,"y":8.3,"t":"← 往左走出蓝墙再切换","en":"Leave the blue block to the LEFT"},{"x":34,"y":8.3,"t":"录下蓝灯，再去左侧黄灯","en":"Record blue. Take amber to the left."},{"x":8,"y":9.0,"t":"两段尖刺中间可以换边","en":"SHIFT in the gap between the spikes"}],"map":["..........................................................","..........................................................","..........................................................","..........................................................","..........................................................","..........................................................","..........................................................",".......................G.......B.............G...A........",".......................G.......B.............G...A........",".......................G.......B.............G...A........",".......................G.......B.............G...A........",".......................G.......B.AAA.........G...A.BBB....","..E..bb..aaa..*.....C..G.......B.AAA.*C......G...A.BBB*S..","##########################################################","##########################################################"]},{"id":"sample_your_turn","name":"中途换班","en":"YOUR TURN","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"先由白天值班","en":"DAY SHIFT","hint":"黄灯上等两秒，向右走出蓝墙，再切到 LUN。过门以后再考虑下一次切换。","hint_en":"Wait 2s on amber, walk clear of blue and SHIFT to LUN. Cross the door before replacing your double."},{"x":792,"name":"轮到夜班了","en":"NIGHT SHIFT","hint":"留在 LUN 走上蓝灯。录下等待后走出黄墙，再切 SOL；上一位分身可以下班了。","hint_en":"Stay in LUN and wait on blue. Leave the amber block, then SHIFT to SOL. The previous double can clock out."},{"x":1476,"name":"交班前一起按","en":"ONE LAST HANDOVER","hint":"黄灯上等两秒，走出蓝墙再切换。跳上右侧蓝台阶，两盏灯一起亮。","hint_en":"Wait on amber, walk clear and SHIFT. Jump onto the right blue ledge; light both plates together."}],"relays":[{"wall":18,"mode":"hold","release":0.75,"plates":[{"x":8,"w":0,"y":13}]},{"wall":37,"mode":"hold","release":0.75,"plates":[{"x":27,"w":1,"y":13}]},{"wall":58,"mode":"latch","release":0.75,"plates":[{"x":46,"w":0,"y":13},{"x":51,"w":1,"y":11}]}],"hints":[{"x":8,"y":8.4,"t":"过门后，才换下一个分身","en":"Cross first. Replace the double later."},{"x":27,"y":8.4,"t":"这次先在蓝灯上等","en":"This time, wait on blue"},{"x":50,"y":8.0,"t":"最后一班，一起交接","en":"One final handover, together"}],"map":["..................................................................","..................................................................","..................................................................","..................................................................","..................................................................","..................................................................","..................................................................",".............A....G.............B....G...........A........G.......",".............A....G.............B....G...........A........G.......",".............A....G.............B....G...........A........G.......",".............A....G.............B....G...........A........G.......",".......BBB...A....G.......AAA...B....G.......BBB.ABBB.....G.......","..S....BBB...A....G.*.C...AAA...B....G.*.C...BBB.A........G..*.E..","##################################################################","##################################################################"]},{"id":"sample_last_train","name":"末班车还没走","en":"THE LAST TRAIN","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"先过两道检票门","en":"TWO TICKET GATES","hint":"把两块黄灯的停顿录进同一段三秒里，再切换。别让新的分身替掉还在开门的那位。","hint_en":"Record a short wait on BOTH amber plates in the same 3s, then SHIFT. Keep that double until both doors are behind you."},{"x":1080,"name":"站台在楼上","en":"UP TO THE PLATFORM","hint":"切到 SOL 上黄台阶，黄灯上等两秒，再切 LUN 去楼下蓝灯。检查点就在门后。","hint_en":"SHIFT to SOL and climb the amber ledge. Wait 2s, then SHIFT to the blue floor plate. A checkpoint waits beyond the door."},{"x":1836,"name":"最后一次换班","en":"THE LAST HANDOVER","hint":"在 LUN 上蓝台阶录下等待，再切 SOL 去右边黄灯。最后一扇门，需要两个人一起按。","hint_en":"Wait on the blue ledge in LUN, then SHIFT to the right amber plate in SOL. Open the last door together."},{"x":2628,"name":"车还在等你","en":"STILL WAITING FOR YOU","hint":"末班车停在 LUN。切到夜晚越过黄刺，走进那扇还亮着的车门。","hint_en":"The last train waits in LUN. SHIFT to night, pass the amber spikes and enter the lit carriage."}],"relays":[{"wall":20,"mode":"hold","release":0.9,"plates":[{"x":8,"w":0,"y":13}]},{"wall":25,"mode":"hold","release":1.1,"plates":[{"x":13,"w":0,"y":13}]},{"wall":47,"mode":"latch","release":0.75,"plates":[{"x":36,"w":0,"y":11},{"x":42,"w":1,"y":13}]},{"wall":70,"mode":"latch","release":0.75,"plates":[{"x":58,"w":1,"y":11},{"x":64,"w":0,"y":13}]}],"hints":[{"x":11,"y":8.4,"t":"两次停顿，一段录像","en":"Two pauses. One recording."},{"x":36,"y":8.2,"t":"过去留在楼上等你","en":"Past you waits upstairs"},{"x":58,"y":8.2,"t":"别急，车还没走","en":"Take your time. The train is waiting."},{"x":80,"y":9.0,"t":"LUN → 末班车","en":"LUN → LAST TRAIN"}],"map":["......................................................................................","......................................................................................","......................................................................................","......................................................................................","......................................................................................","......................................................................................","......................................................................................","................A...G....G..............A......G..............B.......G...............","................A...G....G..............A......G..............B.......G...............","................A...G....G..............A......G..............B.......G...............","................A...G....G..........*...A......G..........*...B.......G...............",".......BBB..BBB.A...G....G........AAAAA.A......G........BBBBB.B.......G...............","..S.C..BBB..BBB.A...G..*.G....C.........A......G...C..........B.......G..C..aaa....Q..","######################################################################################","######################################################################################"]},{"id":"sample_jump_and_wait","name":"跳过去等我","en":"JUMP AND WAIT","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"把这一跳也录下来","en":"RECORD THE JUMP","hint":"跳上右侧黄台阶，停一秒再切换。回到左边蓝灯，等分身跳上高台，两盏灯同时亮起。","hint_en":"Jump onto the right amber plate, wait 1s and SHIFT. Return to the LEFT blue plate and let the replay land upstairs."},{"x":864,"name":"轮到过去的我起跳","en":"LET PAST YOU JUMP","hint":"这次跳上蓝台阶，再切到 SOL 往左走。分身会连跳跃一起重放，门开了再往右走。","hint_en":"Jump onto blue, then SHIFT to SOL and return left. Your double replays the jump too. Head right once the door latches."}],"relays":[{"wall":20,"mode":"latch","plates":[{"x":14,"w":0,"y":11},{"x":9,"w":1,"y":13}]},{"wall":43,"mode":"latch","plates":[{"x":36,"w":1,"y":11},{"x":31,"w":0,"y":13}]}],"hints":[{"x":14,"y":7.8,"t":"落地以后等一秒，再切换","en":"Land, wait one second, then SHIFT"},{"x":9,"y":9.4,"t":"← 回到这盏蓝灯，等过去的你落地","en":"Return to blue and wait for the landing"},{"x":36,"y":7.8,"t":"分身也会跳，不只会站着","en":"Your double can jump, not just stand"}],"map":["....................................................","....................................................","....................................................","....................................................","....................................................","....................................................","....................................................","..................A.G...................B..G........","..................A.G...................B..G........","..................A.G...................B..G........","..............*...A.G...............*...B..G........","............AAAAA.A.G.............BBBBB.B..G........","..S...............A.G...C...............B..G...*.E..","####################################################","####################################################"]},{"id":"sample_come_back","name":"回来接一下我","en":"COME BACK FOR ME","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"门在前面，灯在身后","en":"GO BACK TO GO ON","hint":"去右侧黄灯等两秒，往左走出蓝墙再切换，返回左侧蓝灯。门会保持打开，然后切回 SOL 继续向右。","hint_en":"Wait 2s on the far amber plate. Walk LEFT out of blue, SHIFT and return to the blue plate. Once latched, SHIFT back to SOL and go right."},{"x":1044,"name":"接到人再出发","en":"NO ONE LEFT BEHIND","hint":"切到 LUN，去右侧蓝灯录下等待。走出左侧黄墙，切 SOL 回踩黄灯；门开后再切 LUN 向右出站。","hint_en":"In LUN, wait on the far blue plate. Leave amber to the LEFT, SHIFT to SOL and return to amber. Latch the gate, then take LUN to the exit."}],"relays":[{"wall":25,"mode":"latch","plates":[{"x":19,"w":0,"y":13},{"x":10,"w":1,"y":13}]},{"wall":49,"mode":"latch","plates":[{"x":42,"w":1,"y":13},{"x":33,"w":0,"y":13}]}],"hints":[{"x":19,"y":8.5,"t":"先走远一点，再回头接自己","en":"Go ahead, then come back for yourself"},{"x":10,"y":9.6,"t":"门开后不会关，可以放心再切换","en":"Latched doors stay open when you SHIFT"},{"x":42,"y":8.5,"t":"这次把夜晚的你接回来","en":"This time, come back for your night shift"}],"map":["..........................................................","..........................................................","..........................................................","..........................................................","..........................................................","..........................................................","..........................................................","......................B..G....................A..G........","......................B..G....................A..G........","......................B..G....................A..G........","......................B..G....................A..G........","..................BBB.B..G...............AAA..A..G........","..S..............*BBB.B..G...C..........*AAA..A..G...*.Q..","##########################################################","##########################################################"]},{"id":"sample_three_gates","name":"一口气过三门","en":"THREE DOORS, ONE RUN","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"三个短停顿就够了","en":"THREE SHORT PAUSES","hint":"三盏黄灯从左到右，各稍停约三分之一秒。走出蓝墙就切换，一直往右过三门，中途不要替换分身。","hint_en":"Pause about a third of a second on EACH amber plate. SHIFT just beyond blue, then keep moving right through all three doors without replacing the replay."},{"x":1044,"name":"跑完了，等我一下","en":"CATCH YOUR BREATH","hint":"检查点之后可以慢下来。切 SOL 到黄灯等两秒，走出蓝墙再切换，跳上右侧蓝灯一起开门。","hint_en":"Past the checkpoint, slow down. Wait 2s on amber in SOL, walk clear of blue and SHIFT. Jump onto the right blue plate to open the last door together."}],"relays":[{"wall":16,"mode":"hold","release":1.05,"plates":[{"x":7,"w":0,"y":13}]},{"wall":20,"mode":"hold","release":1.15,"plates":[{"x":8,"w":0,"y":13}]},{"wall":24,"mode":"hold","release":1.25,"plates":[{"x":10,"w":0,"y":13}]},{"wall":58,"mode":"latch","plates":[{"x":46,"w":0,"y":13},{"x":52,"w":1,"y":11}]}],"hints":[{"x":8,"y":8.4,"t":"短停、短停、短停，然后一直向右","en":"Three short pauses, then keep going right"},{"x":20,"y":9.6,"t":"三道门，共用一段三秒录像","en":"Three doors share one three-second recording"},{"x":50,"y":8.0,"t":"跑过三门，再一起收尾","en":"After the run, finish together"}],"map":["................................................................","................................................................","................................................................","................................................................","................................................................","................................................................","................................................................",".............A..G...G...G........................A........G.....",".............A..G...G...G........................A........G.....",".............A..G...G...G........................A........G.....",".............A..G...G...G........................A..*.....G.....",".....BBBBBB..A..G...G...G....................BBB.A.BBB....G.....","..SC.BBBBBB..A..G.*.G...G..*.C...............BBB.A........G..E..","################################################################","################################################################"]},{"id":"sample_home_by_sunrise","name":"天亮就到家","en":"HOME BY SUNRISE","echo_mode":"replay","double_jump":false,"drones":[],"stages":[{"x":0,"name":"在半空换个落脚点","en":"CHANGE LANDINGS MIDAIR","hint":"先跳上黄台阶。站到右边，再向蓝台阶起跳，在半空按 SHIFT，让蓝台阶接住你；然后跳上灰色平台。","hint_en":"Climb the amber ledge and move to its right edge. Jump toward blue and SHIFT in midair so it catches you. Then jump to the grey platform."},{"x":792,"name":"把夜班交给昨天的我","en":"LEAVE NIGHT TO PAST YOU","hint":"在蓝台阶的灯上等两秒，切到 SOL 去右侧黄灯。这一次，出口在白天；过去的你会替你守住最后一盏灯。","hint_en":"Wait 2s on the blue ledge, then SHIFT to the right amber plate. This exit is in SOL. Your past self holds the last light for you."}],"relays":[{"wall":41,"mode":"latch","plates":[{"x":30,"w":1,"y":11},{"x":36,"w":0,"y":13}]}],"hints":[{"x":10,"y":6.7,"t":"空格起跳 → 半空 SHIFT → 落在蓝台阶","en":"Jump, SHIFT in midair, land on blue"},{"x":18,"y":6.5,"t":"到这里就能歇一会儿了","en":"A safe landing and a checkpoint"},{"x":30,"y":8.0,"t":"让昨天的你，送今天的你回家","en":"Let past you see present you home"},{"x":45,"y":9.4,"t":"SOL → 天亮了","en":"SOL → SUNRISE"}],"map":[".................................................",".................................................",".................................................",".................................................",".................................................",".................................................",".................................................","..................................B......G.......",".............*....C...............B......G.......","............BBB..####.............B......G.......",".........*....................*...B......G.......","........AAA.................BBBBB.B......G.......","..S..C................C...........B......G.bb.P..","#######..............############################","#######..............############################"]}];
+const JOURNEY_TOTAL_SHARDS = JOURNEY.reduce((s,l)=>s+l.map.join('').split('*').length-1,0);
 const TOTAL_SHARDS = LEVELS.reduce((s,l)=>s+l.map.join('').split('*').length-1,0);
 
 /* ---------- 存档 ---------- */
-let save = { unlocked:0, best:{} };
+let save = { unlocked:0, best:{}, journeyUnlocked:0, journeyBest:{} };
 try { const s = localStorage.getItem('shift_save_v1'); if (s) save = Object.assign(save, JSON.parse(s)); } catch(e){}
+if (!Number.isInteger(save.unlocked)) save.unlocked = 0;
+if (!save.best || typeof save.best !== 'object') save.best = {};
+if (!Number.isInteger(save.journeyUnlocked)) save.journeyUnlocked = 0;
+save.journeyUnlocked = clamp(save.journeyUnlocked, 0, JOURNEY.length-1);
+if (!save.journeyBest || typeof save.journeyBest !== 'object') save.journeyBest = {};
 function persist(){ try { localStorage.setItem('shift_save_v1', JSON.stringify(save)); } catch(e){} }
 let assistPref = false;
 try { assistPref = localStorage.getItem('shift_assist')==='1'; } catch(e){}
@@ -704,48 +749,121 @@ document.querySelectorAll('.tbtn').forEach(b => {
 
 /* ---------- 游戏状态 ---------- */
 const G = {
-  state:'title', li:0, world:0, mix:0, mixT:0,
+  state:'title', li:0, mode:'campaign', world:0, mix:0, mixT:0,
   time:0, deaths:0, shards:0, shardTotal:0, shifts:0,
   cooldown:0, hitStop:0, trauma:0, flash:0, flashC:[255,255,255], shiftFx:0,
   dead:false, deadT:0, won:false, winT:0, newRecord:false, prevBest:null, assist:false,
-  respawn:{x:0,y:0}, cam:{x:0,y:0}, attractT:0, shardCombo:0, comboT:0, t:0
+  respawn:{x:0,y:0}, cam:{x:0,y:0}, attractT:0, shardCombo:0, comboT:0, t:0,
+  doubleJumpEnabled:false, stageIndex:-1, stageSeen:{}
 };
 const P = { x:0,y:0,w:22,h:26,vx:0,vy:0,grounded:false,coyote:0,airJumpReady:true,face:1,squash:0,landT:0,blink:0,trail:[],trailT:0,scarf:[],idle:0 };
-let grid=[], LW=0, LH=15, shards=[], drones=[], portal=null, checkpoint=null, cpActive=false;
+let grid=[], LW=0, LH=15, shards=[], drones=[], portal=null, checkpoints=[], cpActive=false;
 let particles=[], rings=[], texts=[], echoes=[], relays=[];
+let history=[], historyTime=0;
 const MAXV=265, ACC=2600, AIRACC=1900, FRIC=2200, GRAV=1500, JUMPV=565, AIRJUMPV=500, MAXFALL=720;
 const DOUBLE_JUMP_LEVEL = 4;
 
+function currentLevel(){ return G.mode==='journey' ? JOURNEY[G.li] : LEVELS[G.li]; }
+
 function loadLevel(i){
   clearInput();
-  const L = LEVELS[i];
+  G.li = i;
+  const L = currentLevel();
+  G.doubleJumpEnabled = G.mode !== 'journey' && i >= DOUBLE_JUMP_LEVEL;
   const rows = L.map; const w = Math.max(...rows.map(r=>r.length));
   grid = rows.map(r => r.padEnd(w,'.').split(''));
   LW = w; LH = grid.length;
-  shards=[]; drones=[]; portal=null; checkpoint=null; cpActive=false;
-  relays = (L.relays || []).map(r=>({wall:r.wall, open:false,
-    plates:r.plates.map(p=>({x:(p.x+0.5)*T, y:13*T, w:p.w, active:false}))}));
+  shards=[]; drones=[]; portal=null; checkpoints=[]; cpActive=false;
+  relays = (L.relays || []).map(r=>({wall:r.wall, mode:r.mode||'latch', release:r.release||0.55,
+    open:false, holdTime:0,
+    plates:r.plates.map(p=>({x:(p.x+0.5)*T, y:(p.y||13)*T, w:p.w, active:false}))}));
   for (let r=0;r<LH;r++) for (let c=0;c<w;c++){
     const ch = grid[r][c];
     if (ch==='S'){ G.respawn={x:c*T+(T-P.w)/2, y:(r+1)*T-P.h, world:0}; grid[r][c]='.'; }
     else if (ch==='*'){ shards.push({x:(c+.5)*T, y:(r+.5)*T, taken:false, ph:rng()*6.28}); grid[r][c]='.'; }
     else if (ch==='E'||ch==='P'||ch==='Q'){ portal={x:(c+.5)*T, y:(r+.5)*T, lock:ch==='E'?-1:(ch==='P'?0:1)}; grid[r][c]='.'; }
-    else if (ch==='C'){ checkpoint={x:(c+.5)*T, y:(r+1)*T}; grid[r][c]='.'; }
+    else if (ch==='C'){ checkpoints.push({x:(c+.5)*T, y:(r+1)*T, active:false}); grid[r][c]='.'; }
   }
-  L.drones.forEach(d => drones.push({
+  (L.drones || []).forEach(d => drones.push({
     w:d.w, x:d.x1*T, y:d.y*T, x1:d.x1*T, x2:d.x2*T, spd:d.spd, dir:1, ph:rng()*6.28
   }));
   G.shardTotal = shards.length; G.shards = 0; G.time = 0; G.deaths = 0; G.shifts = 0;
-  G.newRecord = false; G.prevBest = save.best[i] ? save.best[i].time : null;
+  G.newRecord = false;
+  const record = G.mode==='journey' ? save.journeyBest[L.id] : save.best[i];
+  G.prevBest = record ? record.time : null;
   G.world = 0; G.mix = 0; G.mixT = 0; G.cooldown = 0; G.dead = false; G.won = false;
   G.trauma = 0; G.flash = 0; G.shiftFx = 0; G.shardCombo = 0; G.hitStop = 0;
   P.coyote = 0; P.airJumpReady = true; P.squash = 0; P.trailT = 0;
   particles=[]; rings=[]; texts=[]; echoes=[];
   P.x = G.respawn.x; P.y = G.respawn.y; P.vx = 0; P.vy = 0; P.face = 1; P.trail = []; P.scarf = []; P.idle = 0;
   P.grounded = rectSolid(P.x,P.y+0.1,P.w,P.h,G.world);
+  G.stageIndex = -1; G.stageSeen = {};
+  if (G.mode==='journey'){
+    const stage = currentStage();
+    if (stage){ G.stageIndex = stage.idx; G.stageSeen[stage.idx] = true; }
+  }
+  resetHistory();
   G.cam.x = clamp(P.x - VW/2, 0, Math.max(0,LW*T-VW));
   G.cam.y = clamp(P.y - VH/2, 0, Math.max(0,LH*T-VH));
   AU.setWorld(0);
+}
+
+function currentStage(){
+  const stages = currentLevel().stages;
+  if (!stages || !stages.length) return null;
+  let idx = 0;
+  for (let i=0;i<stages.length;i++) if (P.x >= stages[i].x) idx = i;
+  return {idx, stage:stages[idx]};
+}
+
+function resetHistory(){
+  history = [];
+  historyTime = 0;
+  if (G.mode === 'journey'){
+    history.push({x:P.x, y:P.y, t:-3, grounded:P.grounded, face:P.face});
+    history.push({x:P.x, y:P.y, t:0, grounded:P.grounded, face:P.face});
+  }
+}
+
+function recordHistory(dt){
+  if (G.mode !== 'journey') return;
+  historyTime += dt;
+  history.push({x:P.x, y:P.y, t:historyTime, grounded:P.grounded, face:P.face});
+  while (history.length > 2 && history[1].t < historyTime - 3) history.shift();
+}
+
+function advanceEchoes(dt){
+  for (const e of echoes){
+    e.life -= dt;
+    if (!e.track || !e.track.length) continue;
+    const age = e.max - e.life;
+    while (e.cursor + 1 < e.track.length && e.track[e.cursor+1].t <= age) e.cursor++;
+    const pose = e.track[e.cursor];
+    e.x = pose.x; e.y = pose.y; e.grounded = pose.grounded; e.face = pose.face;
+    if (e.cursor + 1 < e.track.length){
+      const next = e.track[e.cursor+1];
+      const span = next.t - pose.t;
+      const blend = span > 0.0001 ? clamp((age - pose.t) / span, 0, 1) : 0;
+      e.x = lerp(pose.x, next.x, blend);
+      e.y = lerp(pose.y, next.y, blend);
+    }
+  }
+  echoes = echoes.filter(e => e.life > 0);
+}
+
+function updateStage(){
+  if (G.mode !== 'journey' || G.state !== 'play' || G.dead || G.won) return;
+  const cur = currentStage();
+  if (!cur) return;
+  if (cur.idx !== G.stageIndex){
+    G.stageIndex = cur.idx;
+    if (!G.stageSeen[cur.idx]){
+      G.stageSeen[cur.idx] = true;
+      const total = currentLevel().stages.length;
+      const no = cur.stage.number || cur.idx + 1;
+      showToast(`第 ${String(no).padStart(2,'0')} / ${String(total).padStart(2,'0')} 段 · ${cur.stage.name}`, cur.stage.hint);
+    }
+  }
 }
 
 /* ---------- 世界查询 ---------- */
@@ -801,10 +919,18 @@ function tryShift(){
     ring(P.x+P.w/2, P.y+P.h/2, [255,71,87], 200, 0.3, 2);
     return;
   }
-  const echoLife = relays.length ? 3 : 0.45;
-  if (relays.length) echoes = [];
-  echoes.push({x:P.x, y:P.y, w:G.world, grounded:P.grounded, life:echoLife, max:echoLife});
-  if (echoes.length>6) echoes.shift();
+  if (G.mode === 'journey'){
+    const track = history.map(p => ({...p, t:p.t - (historyTime - 3)}));
+    const first = track[0] || {x:P.x, y:P.y, t:0, grounded:P.grounded, face:P.face};
+    echoes = [{x:first.x, y:first.y, w:G.world, grounded:first.grounded, face:first.face,
+      life:3, max:3, track, cursor:0}];
+    resetHistory();
+  } else {
+    const echoLife = relays.length ? 3 : 0.45;
+    if (relays.length) echoes = [];
+    echoes.push({x:P.x, y:P.y, w:G.world, grounded:P.grounded, life:echoLife, max:echoLife});
+    if (echoes.length>6) echoes.shift();
+  }
   G.world = target; G.mixT = target; G.cooldown = 0.28; G.shifts++;
   G.hitStop = RM ? 0 : 0.045; G.trauma = Math.min(1,G.trauma+0.16);
   G.shiftFx = SHIFT_DUR; G.flash = 0.28; G.flashC = target===0 ? [255,179,71] : [77,216,255];
@@ -814,15 +940,30 @@ function tryShift(){
   AU.shift(target===1?1:-1); AU.setWorld(target);
   updateChip();
 }
-function updateRelays(){
+function rectOverlap(ax,ay,aw,ah,bx,by,bw,bh){
+  return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by;
+}
+function updateRelays(dt = 1/60){
   for (const gate of relays){
     for (const p of gate.plates){
       const onPlate = (actor, world) => world===p.w && actor.grounded &&
         Math.abs(actor.x+P.w/2-p.x)<22 && Math.abs(actor.y+P.h-p.y)<5;
       p.active = (!G.dead && onPlate(P,G.world)) || echoes.some(e=>e.life>0 && onPlate(e,e.w));
     }
-    if (!gate.open && gate.plates.every(p=>p.active)){
-      gate.open = true; AU.checkpoint();
+    const powered = gate.plates.every(p=>p.active);
+    const wasOpen = gate.open;
+    if (gate.mode === 'hold'){
+      gate.holdTime = powered ? gate.release : Math.max(0, gate.holdTime - dt);
+      let occupied = false;
+      for (let r=0;r<LH;r++){
+        if (grid[r][gate.wall]==='G' && rectOverlap(P.x,P.y,P.w,P.h,gate.wall*T,r*T,T,T)){ occupied = true; break; }
+      }
+      gate.open = gate.holdTime > 0 || (wasOpen && occupied);
+    } else {
+      gate.open = wasOpen || powered;
+    }
+    if (gate.open && !wasOpen){
+      AU.checkpoint();
       ftext((gate.wall+0.5)*T, 11*T, '共鸣锁已解除', css([61,220,151]), 16);
       burst((gate.wall+0.5)*T, 12*T, 24, [61,220,151], 200);
       ring((gate.wall+0.5)*T, 12*T, [61,220,151], 340, 0.5, 3);
@@ -832,6 +973,7 @@ function updateRelays(){
 function die(){
   if (G.dead||G.won) return;
   echoes = [];
+  resetHistory();
   G.dead = true; G.deadT = 0.72; G.deaths++;
   G.trauma = Math.min(1,G.trauma+0.7); G.hitStop = RM?0:0.1;
   G.flash = 0.5; G.flashC = [255,71,87];
@@ -846,6 +988,8 @@ function respawn(){
   P.x = G.respawn.x; P.y = G.respawn.y; P.vx = 0; P.vy = 0; P.trail = []; P.scarf = [];
   P.grounded = rectSolid(P.x,P.y+0.1,P.w,P.h,G.world);
   P.coyote = 0; P.airJumpReady = true; jumpBuf = 0;
+  echoes = [];
+  resetHistory();
   G.flash = 0.25; G.flashC = PAL.player;
   ring(P.x+P.w/2, P.y+P.h/2, PAL.edge, 300, 0.4, 2);
   dust(P.x+P.w/2, P.y+P.h, 8, PAL.particle);
@@ -858,16 +1002,23 @@ function winLevel(){
   ring(portal.x, portal.y, PAL.edge, 500, 0.6, 4);
   AU.win();
   const stars = 1 + (G.shards===G.shardTotal?1:0) + (G.deaths===0?1:0);
-  const b = save.best[G.li];
+  const L = currentLevel();
+  const store = G.mode==='journey' ? save.journeyBest : save.best;
+  const key = G.mode==='journey' ? L.id : G.li;
+  const b = store[key];
   G.prevBest = b ? b.time : null;
   G.newRecord = !b || G.time < b.time;
-  save.best[G.li] = {
+  store[key] = {
     stars: Math.max(stars, b?b.stars:0),
     time: b ? Math.min(b.time, G.time) : G.time,
     shards: Math.max(G.shards, b?b.shards:0),
     deaths: b ? Math.min(b.deaths, G.deaths) : G.deaths
   };
-  save.unlocked = Math.max(save.unlocked, Math.min(G.li+1, LEVELS.length-1));
+  if (G.mode==='journey'){
+    save.journeyUnlocked = Math.max(save.journeyUnlocked, Math.min(G.li+1, JOURNEY.length-1));
+  } else {
+    save.unlocked = Math.max(save.unlocked, Math.min(G.li+1, LEVELS.length-1));
+  }
   persist();
 }
 
@@ -921,7 +1072,7 @@ function update(dt){
   /* 跳跃 */
   P.coyote = P.grounded ? 0.1 : Math.max(0, P.coyote-dt);
   jumpBuf = Math.max(0, jumpBuf-dt);
-  if (jumpBuf>0 && (P.coyote>0 || (G.li>=DOUBLE_JUMP_LEVEL && P.airJumpReady))){
+  if (jumpBuf>0 && (P.coyote>0 || (G.doubleJumpEnabled && P.airJumpReady))){
     const air = P.coyote<=0;
     if (air) P.airJumpReady = false;
     jumpBuf = 0; P.coyote = 0; P.vy = air ? -AIRJUMPV : -JUMPV; P.grounded = false;
@@ -986,7 +1137,10 @@ function update(dt){
   }
   if (P.y > LH*T + 60) die();
   if (G.dead){ updateFx(dt); updateCam(dt); return; }
-  updateRelays();
+  recordHistory(dt);
+  advanceEchoes(dt);
+  updateRelays(dt);
+  updateStage();
 
   /* 收集 */
   const pcx = P.x+P.w/2, pcy = P.y+P.h/2;
@@ -1003,10 +1157,15 @@ function update(dt){
       updateHUD();
     }
   }
-  if (checkpoint && !cpActive && Math.abs(pcx-checkpoint.x)<24 && Math.abs(pcy-(checkpoint.y-18))<34){
-    cpActive = true; G.respawn = {x:checkpoint.x-P.w/2, y:checkpoint.y-P.h, world:G.world};
-    AU.checkpoint(); ftext(checkpoint.x, checkpoint.y-52, '检查点', css([61,220,151]), 13);
-    ring(checkpoint.x, checkpoint.y-20, [61,220,151], 260, 0.5, 2);
+  for (const cp of checkpoints){
+    if (cp.active) continue;
+    if (Math.abs(pcx-cp.x)<24 && Math.abs(pcy-(cp.y-18))<34){
+      cp.active = true; cpActive = true;
+      G.respawn = {x:cp.x-P.w/2, y:cp.y-P.h, world:G.world};
+      AU.checkpoint(); ftext(cp.x, cp.y-52, '检查点', css([61,220,151]), 13);
+      ring(cp.x, cp.y-20, [61,220,151], 260, 0.5, 2);
+      if (G.mode==='journey'){ echoes=[]; resetHistory(); }
+    }
   }
   if (portal && (portal.lock===-1 || portal.lock===G.world)){
     if ((pcx-portal.x)**2 + (pcy-portal.y)**2 < 34*34) winLevel();
@@ -1050,8 +1209,6 @@ function updateFx(dt){
   rings = rings.filter(r=>r.life>0);
   for (const t of texts){ t.life -= dt; t.y -= 26*dt; }
   texts = texts.filter(t=>t.life>0);
-  for (const e of echoes) e.life -= dt;
-  echoes = echoes.filter(e=>e.life>0);
 }
 function updateCam(dt){
   const tx = clamp(P.x + P.w/2 - VW/2 + P.face*55 + P.vx*0.14, 0, Math.max(0,LW*T-VW));
@@ -1215,8 +1372,10 @@ function drawWorld(camX, camY, m){
     ctx.save();
     ctx.strokeStyle=css(gate.open?[61,220,151]:[195,143,255],0.4); ctx.lineWidth=1;
     ctx.setLineDash(gate.open?[]:[4,5]);
-    ctx.beginPath(); ctx.moveTo(gate.plates[0].x,13*T+14);
-    ctx.lineTo((gate.wall+0.5)*T,13*T+14); ctx.lineTo((gate.wall+0.5)*T,13*T); ctx.stroke();
+    for (const p of gate.plates){
+      ctx.beginPath(); ctx.moveTo(p.x,p.y+14);
+      ctx.lineTo((gate.wall+0.5)*T,p.y+14); ctx.lineTo((gate.wall+0.5)*T,p.y); ctx.stroke();
+    }
     ctx.setLineDash([]);
     for (const p of gate.plates){
       const col=p.w===0?WA.edge:WB.edge;
@@ -1233,14 +1392,14 @@ function drawWorld(camX, camY, m){
   }
 
   /* 检查点 */
-  if (checkpoint){
-    const cx = checkpoint.x, cy = checkpoint.y;
-    ctx.strokeStyle = css(cpActive?[61,220,151]:PAL.neutralEdge); ctx.lineWidth = 3;
+  for (const cp of checkpoints){
+    const cx = cp.x, cy = cp.y;
+    ctx.strokeStyle = css(cp.active?[61,220,151]:PAL.neutralEdge); ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy-44); ctx.stroke();
-    ctx.fillStyle = css(cpActive?[61,220,151]:PAL.neutralEdge, cpActive?1:0.5);
+    ctx.fillStyle = css(cp.active?[61,220,151]:PAL.neutralEdge, cp.active?1:0.5);
     const wave = Math.sin(G.t*4)*3;
     ctx.beginPath(); ctx.moveTo(cx, cy-44); ctx.lineTo(cx+22, cy-38+wave); ctx.lineTo(cx, cy-30); ctx.closePath(); ctx.fill();
-    if (cpActive){
+    if (cp.active){
       ctx.save(); ctx.globalAlpha = 0.3+0.15*Math.sin(G.t*3);
       ctx.fillStyle = css([61,220,151]);
       ctx.beginPath(); ctx.arc(cx, cy-44, 5, 0, 6.283); ctx.fill(); ctx.restore();
@@ -1289,7 +1448,7 @@ function drawWorld(camX, camY, m){
   }
 
   /* 提示文字 */
-  const L = LEVELS[G.li];
+  const L = currentLevel();
   if (G.state==='play' && L.hints){
     ctx.save(); ctx.textAlign = 'center'; ctx.font = '600 13px "Segoe UI","Microsoft YaHei",sans-serif';
     for (const h of L.hints){
@@ -1312,6 +1471,16 @@ function drawActors(camX, camY){
   for (const e of echoes){
     const a = clamp(e.life/e.max,0,1);
     const col = e.w===0 ? WA.edge : WB.edge;
+    if (e.track && e.track.length > 1){
+      ctx.save(); ctx.globalAlpha = a*0.18; ctx.strokeStyle = css(col);
+      ctx.lineWidth = 1.2; ctx.setLineDash([3,5]);
+      ctx.beginPath();
+      for (let i=0;i<e.track.length;i+=6){
+        const p = e.track[i], px = p.x+P.w/2, py = p.y+P.h/2;
+        i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+      }
+      ctx.stroke(); ctx.restore();
+    }
     ctx.save(); ctx.globalAlpha = a*0.32;
     ctx.fillStyle = css(col);
     ctx.beginPath(); ctx.roundRect(e.x, e.y, P.w, P.h, 7); ctx.fill();
@@ -1554,7 +1723,7 @@ function drawPlayer(){
   ctx.fillStyle = css(PAL.edge, 0.9);
   ctx.beginPath(); ctx.moveTo(cx, P.y+18); ctx.lineTo(cx+3.5, P.y+22); ctx.lineTo(cx, P.y+26); ctx.lineTo(cx-3.5, P.y+22); ctx.closePath(); ctx.fill();
   ctx.restore();
-  if (G.li>=DOUBLE_JUMP_LEVEL && !P.grounded && !G.won){
+  if (G.doubleJumpEnabled && !P.grounded && !G.won){
     ctx.save(); ctx.strokeStyle=css(PAL.edge,0.7); ctx.lineWidth=1.5;
     ctx.fillStyle=css(PAL.edge);
     ctx.beginPath(); ctx.arc(cx,P.y+P.h+9,3.5,0,6.283);
@@ -1573,7 +1742,7 @@ function drawPlayer(){
 /* ---------- HUD / 界面 ---------- */
 const $ = id => document.getElementById(id);
 const hud=$('hud'), toast=$('toast');
-const overlays = { title:$('titleOv'), pause:$('pauseOv'), win:$('winOv'), end:$('endOv') };
+const overlays = { title:$('titleOv'), pause:$('pauseOv'), win:$('winOv'), end:$('endOv'), journey:$('journeyOv') };
 function hideAll(){ for (const k in overlays) overlays[k].classList.remove('show'); }
 function fmt(t){
   const m = Math.floor(t/60), s = Math.floor(t%60), d = Math.floor((t%1)*10);
@@ -1585,11 +1754,15 @@ function updateChip(){
   $('worldName').textContent = G.world===0 ? '阳界 SOL' : '阴界 LUN';
 }
 function updateHUD(){
-  $('jumpHint').textContent = G.li>=DOUBLE_JUMP_LEVEL ? '跳跃 · 空中再按一次' : '跳跃';
-  $('pauseJumpHint').textContent = G.li>=DOUBLE_JUMP_LEVEL ? '松开再按：二段跳' : '跳跃 · 第5关解锁二段跳';
+  $('jumpHint').textContent = G.doubleJumpEnabled ? '跳跃 · 空中再按一次' : '跳跃';
+  $('pauseJumpHint').textContent = G.doubleJumpEnabled ? '松开再按：二段跳'
+    : (G.mode==='journey' ? '单次跳跃' : '跳跃 · 第5关解锁二段跳');
   $('shardStat').textContent = `${G.shards}/${G.shardTotal}`;
   $('deathStat').textContent = G.deaths;
-  $('lvLabel').textContent = `${String(G.li+1).padStart(2,'0')} · ${LEVELS[G.li].name}`;
+  const L = currentLevel();
+  $('lvLabel').textContent = G.mode==='journey'
+    ? `${String(G.li+1).padStart(2,'0')}/${JOURNEY.length} · ${L.name}`
+    : `${String(G.li+1).padStart(2,'0')} · ${L.name}`;
 }
 let lastTimeStr = '';
 function updateTime(){
@@ -1619,20 +1792,62 @@ function buildLevelGrid(){
     g.appendChild(b);
   });
 }
+function buildJourneyGrid(){
+  const g = $('journeyGrid'); g.innerHTML = '';
+  JOURNEY.forEach((L,i)=>{
+    const b = document.createElement('button');
+    b.className = 'jvbtn';
+    const locked = i > save.journeyUnlocked;
+    const bst = save.journeyBest[L.id];
+    b.disabled = locked;
+    b.innerHTML = `<span class="jnum">${String(i+1).padStart(2,'0')} / ${JOURNEY.length}</span><span class="jname">${L.name}</span><small>${locked?'锁':(bst?'★'.repeat(bst.stars):'·')}</small>`;
+    b.title = locked ? '未解锁' : `${L.name} ${L.en}${bst?` · 最佳 ${fmt(bst.time)}`:''}`;
+    b.addEventListener('click', ()=>{ AU.init(); AU.ui(); startJourney(i); b.blur(); });
+    g.appendChild(b);
+  });
+  $('journeyContinueBtn').textContent = save.journeyUnlocked===0 ? '开始旅程' : `继续第 ${String(save.journeyUnlocked+1).padStart(2,'0')} 站`;
+}
 function startLevel(i){
-  G.li = i; loadLevel(i);
+  G.mode = 'campaign'; G.li = i; loadLevel(i);
   G.state = 'play';
   hideAll(); hud.style.display = 'block';
   updateChip(); updateHUD(); lastTimeStr='';
-  showToast(`<span>${String(i+1).padStart(2,'0')}</span> · ${LEVELS[i].name} <span style="color:var(--mut);font-weight:400;font-size:.75em">${LEVELS[i].en}</span>`, LEVELS[i].hint);
+  const L = currentLevel();
+  showToast(`<span>${String(i+1).padStart(2,'0')}</span> · ${L.name} <span style="color:var(--mut);font-weight:400;font-size:.75em">${L.en}</span>`, L.hint);
   AU.duck(false);
 }
-function restartLevel(){ AU.ui(); startLevel(G.li); }
+function startJourney(i){
+  G.mode = 'journey'; G.li = i; loadLevel(i);
+  G.state = 'play';
+  hideAll(); hud.style.display = 'block';
+  updateChip(); updateHUD(); lastTimeStr='';
+  const L = currentLevel();
+  const st = currentStage();
+  showToast(`<span>${String(i+1).padStart(2,'0')} / ${JOURNEY.length}</span> · ${L.name} <span style="color:var(--mut);font-weight:400;font-size:.75em">${L.en}</span>`,
+    st ? `${st.stage.name} · ${st.stage.hint}` : L.hint);
+  AU.duck(false);
+}
+function showJourneyMap(){
+  AU.ui(); G.state = 'title'; hideAll(); hud.style.display = 'none';
+  buildJourneyGrid();
+  overlays.journey.classList.add('show');
+  AU.duck(false);
+}
+function restartLevel(){
+  AU.ui();
+  if (G.mode==='journey') startJourney(G.li); else startLevel(G.li);
+}
 function pauseGame(){
   if (G.state!=='play') return;
   clearInput();
   G.state = 'pause'; AU.duck(true); AU.ui();
-  $('pauseSub').textContent = `${String(G.li+1).padStart(2,'0')} · ${LEVELS[G.li].name} · ${LEVELS[G.li].en}`;
+  const L = currentLevel();
+  const prefix = G.mode==='journey'
+    ? `第 ${String(G.li+1).padStart(2,'0')} / ${JOURNEY.length} 站`
+    : String(G.li+1).padStart(2,'0');
+  $('pauseSub').textContent = `${prefix} · ${L.name} · ${L.en}`;
+  $('pauseRestartBtn').textContent = G.mode==='journey' ? '重走这一站' : '重开本关';
+  $('pauseMapBtn').style.display = G.mode==='journey' ? '' : 'none';
   overlays.pause.classList.add('show');
 }
 function resumeGame(){
@@ -1642,17 +1857,19 @@ function resumeGame(){
 }
 function showWin(){
   G.state = 'win';
-  const L = LEVELS[G.li];
+  const L = currentLevel();
+  const isJourney = G.mode==='journey';
+  const final = isJourney ? G.li===JOURNEY.length-1 : G.li===LEVELS.length-1;
   const stars = 1 + (G.shards===G.shardTotal?1:0) + (G.deaths===0?1:0);
   $('winName').textContent = `· ${L.name}`;
-  $('winSub').textContent = `${L.en} · ${stars===3?'完美相位！':stars===2?'出色的切换':'继续前进'}`;
+  $('winSub').textContent = `${L.en}${isJourney?` · 第 ${G.li+1} / ${JOURNEY.length} 站`:''} · ${stars===3?'完美相位！':stars===2?'出色的切换':'继续前进'}`;
   $('winTime').textContent = fmt(G.time);
   $('winShards').textContent = `${G.shards}/${G.shardTotal}`;
   $('winDeaths').textContent = G.deaths;
   const meta = $('winMeta');
   if (G.newRecord){ meta.textContent = `★ 新纪录！ · 相位切换 ${G.shifts} 次`; meta.style.color = 'var(--gold)'; }
   else { meta.textContent = `最佳 ${fmt(G.prevBest)} · 相位切换 ${G.shifts} 次`; meta.style.color = 'var(--mut)'; }
-  $('nextBtn').textContent = G.li === LEVELS.length-1 ? '完成旅程' : '下一关';
+  $('nextBtn').textContent = isJourney ? (final?'返回旅程地图':'下一站') : (final?'完成旅程':'下一关');
   const svgs = $('winStars').querySelectorAll('svg');
   svgs.forEach(s=>s.classList.remove('earned'));
   overlays.win.classList.add('show');
@@ -1660,7 +1877,10 @@ function showWin(){
 }
 function nextLevel(){
   AU.ui();
-  if (G.li === LEVELS.length-1) showEnd();
+  if (G.mode==='journey'){
+    if (G.li===JOURNEY.length-1) showJourneyMap();
+    else startJourney(G.li+1);
+  } else if (G.li === LEVELS.length-1) showEnd();
   else startLevel(G.li+1);
 }
 function showEnd(){
@@ -1673,9 +1893,9 @@ function showEnd(){
   overlays.end.classList.add('show');
 }
 function toTitle(){
-  G.state = 'title'; hideAll(); hud.style.display = 'none';
+  G.mode = 'campaign'; G.state = 'title'; hideAll(); hud.style.display = 'none';
   loadLevel(0); G.attractT = 0;
-  buildLevelGrid();
+  buildLevelGrid(); buildJourneyGrid();
   overlays.title.classList.add('show');
   AU.duck(false);
 }
@@ -1698,11 +1918,16 @@ function syncAssistUI(){
   $('assistTag').style.display = G.assist ? '' : 'none';
 }
 $('startBtn').addEventListener('click', e=>{ AU.init(); AU.ui(); startLevel(save.unlocked); e.currentTarget.blur(); });
+$('journeyBtn').addEventListener('click', e=>{ AU.init(); AU.ui(); startJourney(save.journeyUnlocked); e.currentTarget.blur(); });
+$('journeyMapBtn').addEventListener('click', e=>{ AU.init(); AU.ui(); showJourneyMap(); e.currentTarget.blur(); });
+$('journeyContinueBtn').addEventListener('click', e=>{ AU.init(); AU.ui(); startJourney(save.journeyUnlocked); e.currentTarget.blur(); });
+$('journeyBackBtn').addEventListener('click', e=>{ AU.ui(); toTitle(); e.currentTarget.blur(); });
 $('resumeBtn').addEventListener('click', e=>{ resumeGame(); e.currentTarget.blur(); });
 $('pauseRestartBtn').addEventListener('click', e=>{ overlays.pause.classList.remove('show'); restartLevel(); e.currentTarget.blur(); });
+$('pauseMapBtn').addEventListener('click', e=>{ overlays.pause.classList.remove('show'); showJourneyMap(); e.currentTarget.blur(); });
 $('quitBtn').addEventListener('click', e=>{ AU.ui(); toTitle(); e.currentTarget.blur(); });
 $('nextBtn').addEventListener('click', e=>{ nextLevel(); e.currentTarget.blur(); });
-$('replayBtn').addEventListener('click', e=>{ AU.ui(); startLevel(G.li); e.currentTarget.blur(); });
+$('replayBtn').addEventListener('click', e=>{ AU.ui(); restartLevel(); e.currentTarget.blur(); });
 $('endAgainBtn').addEventListener('click', e=>{ AU.ui(); startLevel(0); e.currentTarget.blur(); });
 $('endTitleBtn').addEventListener('click', e=>{ AU.ui(); toTitle(); e.currentTarget.blur(); });
 $('soundBtn').addEventListener('click', e=>{ toggleMute(); e.currentTarget.blur(); });
@@ -1727,24 +1952,27 @@ function frame(now){
 }
 loadLevel(0);
 G.assist = assistPref; syncAssistUI();
-buildLevelGrid();
+buildLevelGrid(); buildJourneyGrid();
 syncSoundUI();
 requestAnimationFrame(frame);
 
 /* 测试钩子 */
 window.__shift = {
-  G, P, IN, LEVELS, AU,
-  get state(){ return G.state; }, get world(){ return G.world; },
+  G, P, IN, LEVELS, JOURNEY, AU,
+  get state(){ return G.state; }, get world(){ return G.world; }, get mode(){ return G.mode; }, get li(){ return G.li; },
   start: i => startLevel(clamp(i,0,LEVELS.length-1)),
+  startJourney: i => startJourney(clamp(i,0,JOURNEY.length-1)),
+  restart: () => restartLevel(),
   shift: () => tryShift(),
   step(n=1, dt=1/60){ for(let i=0;i<n;i++) update(dt); render(); },
   shot(){ render(); return cvs.toDataURL('image/png'); },
   key(code, down){ dispatchEvent(new KeyboardEvent(down?'keydown':'keyup',{code})); },
-  info(){ return { state:G.state, li:G.li, world:G.world, x:P.x, y:P.y, vx:P.vx, vy:P.vy,
+  info(){ return { state:G.state, mode:G.mode, li:G.li, world:G.world, x:P.x, y:P.y, vx:P.vx, vy:P.vy,
     dead:G.dead, won:G.won, time:G.time, deaths:G.deaths, shards:G.shards, total:G.shardTotal,
-    gridW:LW, gridH:LH, portal, respawn:G.respawn,
-    relays:relays.map(g=>({wall:g.wall,open:g.open,plates:g.plates.map(p=>({...p}))})),
-    echoes:echoes.map(e=>({...e})), drones:drones.map(d=>({...d})) }; }
+    doubleJump:G.doubleJumpEnabled, stage:G.stageIndex, gridW:LW, gridH:LH, portal, respawn:G.respawn,
+    checkpoints:checkpoints.map(c=>({...c})),
+    relays:relays.map(g=>({wall:g.wall,mode:g.mode,release:g.release,open:g.open,holdTime:g.holdTime,plates:g.plates.map(p=>({...p}))})),
+    echoes:echoes.map(e=>({...e})), history:history.map(h=>({...h})), drones:drones.map(d=>({...d})) }; }
 };
 </script>
 </body>
