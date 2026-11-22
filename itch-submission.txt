@@ -60,7 +60,7 @@ Created by Alaneve541 with Qoder AI assistance in programming, level iteration a
 Browser graphics use procedural Canvas drawings; browser music/SFX use WebAudio.
 The native Windows edition uses procedural Godot gameplay graphics and original synthesized PCM audio.
 Its day/night station menu illustration is AI-generated with Meowa; buttons and bilingual text remain native Godot controls.
-Source license: MIT. Add the actual public GitHub repository link after publishing it.
+Source license: MIT. Source: https://github.com/Alaneve541/shift-phase-walker
 
 中文简介
 此界的断桥，是彼界的通途。
@@ -89,7 +89,7 @@ AI assistance: 如页面或比赛要求披露，按上文如实填写，提交�
 2. 在自己的 itch.io 账号中新建项目，项目类型选 HTML。
 3. 上传 ZIP，勾选类似“This file will be played in the browser”的浏览器游玩选项。
 4. 嵌入区域建议 960 × 640；启用全屏选项。点击游戏区域后键盘输入才会聚焦。
-5. 用 cover.png 作封面、echo.png 作截图，粘贴简介与操作说明，价格设为免费。
+5. 用 cover.png 作封面，从 screenshots/ 或 echo.png 选截图，粘贴简介与操作说明，价格设为免费。
 6. 在实际 itch.io 嵌入页试玩：开始、跳跃、切换、暂停、静音、重开与存档。
    存档保存在当前浏览器/站点，file://、本地预览与 itch.io 的存档互不共享。
 7. 补上实际 GitHub 公共仓库地址，确认页面可公开访问，再发布作品页面。

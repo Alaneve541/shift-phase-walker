@@ -1,0 +1,17 @@
+SHIFT · 双界行者 — GitHub 上传包
+
+本包同时包含可玩的游戏和源码。
+- index.html：九关网页版。上传到仓库并启用 GitHub Pages 后可直接在浏览器玩。
+- release/SHIFT-HTML5-Nine-Levels.zip：同一个九关网页版的独立 ZIP。
+- release/SHIFT-Windows-Ten-Stops.zip：十站“等我一下”+ 原版九关的 Windows 版，解压运行 EXE。
+- godot/：完整 Godot 4.7.2 工程，包含十站旅程。
+- README.md、LICENSE、tests 和打包脚本：源码与说明。
+
+上传：
+1. 解压本包，把解压后的文件传到 GitHub 仓库，不要把外层 ZIP 当源码。
+2. 网页版：Settings → Pages → 选择分支根目录发布。
+3. Windows 版：Releases → 新建版本，附加 release/SHIFT-Windows-Ten-Stops.zip。
+4. 该 ZIP 约 41 MB，可能超过 GitHub 网页单文件 25 MB 限制；请用 GitHub Desktop/Git 推送，或只通过 Releases 上传。
+5. 原始 EXE 约 108 MiB，超过 GitHub 100 MB 单文件限制，因此包内不直接放 EXE。
+
+网页版只有原版九关；十站旅程在 Windows 版和 Godot 工程中。
